@@ -1,256 +1,133 @@
 const SCALE = 5;
 
-var chainAngle = degreesToRadians(35);
-var cageAngle = degreesToRadians(0);
-var robotAngle = degreesToRadians(0);
-var robotContactPoint = 1;
-
-const CAGE_WIDTH = 7.375 * SCALE;
-const CAGE_HEIGHT = 24 * SCALE;
-
 const ROBOT_WIDTH = 32 * SCALE;
-const ROBOT_HEIGHT = 4 * SCALE;
+const ROBOT_HEIGHT = 6 * SCALE;
 
-const FLOOR_DISTANCE = 3.5 * SCALE;
-const FLOOR_LOCATION = 60 * SCALE;
+const REEF_WIDTH = 14.5 * SCALE;
+const TROUGH_WIDTH = 0.5 * SCALE;
+const TROUGH_HEIGHT = 18 * SCALE;
 
-const CHAIN_LENGTH = (60 * SCALE) - (CAGE_HEIGHT + FLOOR_DISTANCE);
-var chainSlider, cageSlider, robotSlider, robotContactSlider;
+const SUPPORT_HEIGHT = 65 * SCALE;
+const SUPPORT_WIDTH = 3.5 * SCALE;
 
-let gravity = false;
-//update plz
+const LEVEL_2_HEIGHT = 32 * SCALE;
+const LEVEL_4_HEIGHT = 72 * SCALE;
 
-// Grab the button element
-const gravityButton = document.getElementById('gravity');
+const LEVES_START_X = REEF_WIDTH - 2.5 * SCALE;
 
-// Add an event listener to set the flag when the button is clicked
-gravityButton.addEventListener('click', () => {
-    gravity = !gravity;
-});
+const ELEVATOR_HEIGHT = 92 * SCALE;
+const ELEVATOR_WIDTH = 4 * SCALE;
 
+const ARM_LENGTH = 18 * SCALE;
+const ARM_WIDTH = 2 * SCALE;
+
+const CORAL_WIDTH = 11.875 * SCALE;
+const CORAL_HEIGHT = 4.5 * SCALE;
+
+
+var robotX;
+var elevatorHeight;
+var armAngle;
+
+
+var robotXSlider, elevatorSlider, armSlider;
 function setup() {
-    createP('Chain Angle:').position(10, 0);
-    createP('Cage Angle:').position(10, 40);
-    createP('Robot Angle:').position(10, 80);
-    createP('Robot Contact Point:').position(10, 120);
-    createCanvas(400, 400);
-    chainSlider = createSlider(-90, 90, 0);
-    chainSlider.position(10, 30);
-    chainSlider.size(80);
+    createCanvas(500, 500);
+    robotX = width / 2;
+    createP('Robot Position:').position(10, 0);
+    createP('Elevator Height:').position(10, 40);
+    createP('Arm Angle:').position(10, 80);
 
-    cageSlider = createSlider(-90, 90, 0);
-    cageSlider.position(10, 70);
-    cageSlider.size(80);
+    robotXSlider = createSlider(ROBOT_WIDTH / 2, width - REEF_WIDTH - ROBOT_WIDTH / 2, width / 2);
+    robotXSlider.position(10, 30);
+    robotXSlider.size(80);
 
-    robotSlider = createSlider(0, 90, 0);
-    robotSlider.position(10, 110);
-    robotSlider.size(80);
+    elevatorSlider = createSlider(0, ELEVATOR_HEIGHT, 30);
+    elevatorSlider.position(10, 70);
+    elevatorSlider.size(80);
 
-    robotContactSlider = createSlider(0, 1.5, 1, 0);
-    robotContactSlider.position(10, 150);
-    robotContactSlider.size(80);
+    armSlider = createSlider(-180, 180, 0);
+    armSlider.position(10, 110);
+    armSlider.size(80);
 }
 
 function draw() {
-    chainAngle = degreesToRadians(chainSlider.value());
-    cageAngle = degreesToRadians(cageSlider.value());
-    robotAngle = degreesToRadians(robotSlider.value());
-    robotContactPoint = robotContactSlider.value();
+    robotX = robotXSlider.value();
+    elevatorHeight = elevatorSlider.value();
+    armAngle = degreesToRadians(armSlider.value());
+
     background(255);
-    // The floor
-    strokeWeight(0);
-    fill(90);
-    rect(0, FLOOR_LOCATION, width, height - FLOOR_LOCATION)
 
-    // The chain
-    fill(0);
-    stroke(0);
-    strokeWeight(3);
+    noStroke();
+
+    // Trough
+    fill(57);
+    rect(width - REEF_WIDTH, height - TROUGH_HEIGHT, TROUGH_WIDTH, TROUGH_HEIGHT)
+
     beginShape();
-    vertex(width / 2, 0);
-    let chainPoint = createVector(width / 2 + CHAIN_LENGTH * Math.sin(chainAngle), CHAIN_LENGTH * Math.cos(chainAngle))
-    vertex(chainPoint.x, chainPoint.y)
+    vertex(width - REEF_WIDTH, height - TROUGH_HEIGHT + 2 * SCALE);
+    vertex(width - REEF_WIDTH, height);
+    vertex(width - SUPPORT_WIDTH, height);
+    vertex(width - SUPPORT_WIDTH, height - TROUGH_HEIGHT - SCALE);
     endShape();
 
-    // The Cage
-    noFill();
-    stroke(220, 0, 0);
-    strokeWeight(3);
+    // Pipes
+    fill(244, 24, 253)
     beginShape();
-    let p1 = createVector(
-        chainPoint.x - CAGE_WIDTH / 2 * Math.cos(cageAngle + chainAngle),
-        chainPoint.y + CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle));
-
-    let p2 = createVector(
-        chainPoint.x + CAGE_WIDTH / 2 * Math.cos(cageAngle + chainAngle),
-        chainPoint.y - CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle));
-
-    let p3 = createVector(
-        p2.x + CAGE_HEIGHT * Math.sin(cageAngle + chainAngle),
-        p2.y + CAGE_HEIGHT * Math.cos(cageAngle + chainAngle));
-
-    let p4 = createVector(
-        p1.x + CAGE_HEIGHT * Math.sin(cageAngle + chainAngle),
-        p1.y + CAGE_HEIGHT * Math.cos(cageAngle + chainAngle));
-
-    vertex(p1.x, p1.y);
-    vertex(p2.x, p2.y);
-    vertex(p3.x, p3.y);
-    vertex(p4.x, p4.y);
-    vertex(p1.x, p1.y);
+    vertex(width - LEVES_START_X, height - LEVEL_2_HEIGHT);
+    vertex(width - LEVES_START_X - 0.8 * SCALE, height - LEVEL_2_HEIGHT + 1.1 * SCALE);
+    vertex(width - LEVES_START_X - 0.8 * SCALE + 22.135 * SCALE, height - LEVEL_2_HEIGHT + 1.1 * SCALE + 15.5 * SCALE);
+    vertex(width - LEVES_START_X + 22.135 * SCALE, height - LEVEL_2_HEIGHT + 15.5 * SCALE);
     endShape();
+
+    beginShape();
+    vertex(width - LEVES_START_X, height - LEVEL_2_HEIGHT - 13 * SCALE);
+    vertex(width - LEVES_START_X - 0.8 * SCALE, height - LEVEL_2_HEIGHT + 1.1 * SCALE - 13 * SCALE);
+    vertex(width - LEVES_START_X - 0.8 * SCALE + 22.135 * SCALE, height - LEVEL_2_HEIGHT + 1.1 * SCALE + 15.5 * SCALE - 13 * SCALE);
+    vertex(width - LEVES_START_X + 22.135 * SCALE, height - LEVEL_2_HEIGHT + 15.5 * SCALE - 13 * SCALE);
+    endShape();
+
+    rect(width - LEVES_START_X, height - LEVEL_4_HEIGHT, 1.5 * SCALE, 12 * SCALE);
+    rect(width - LEVES_START_X, height - LEVEL_4_HEIGHT + 10.5 * SCALE, 12 * SCALE, 1.5 * SCALE);
+
+    // Support Structure
+    fill(57);
+    rect(width - SUPPORT_WIDTH, height - SUPPORT_HEIGHT, SUPPORT_WIDTH, SUPPORT_HEIGHT);
+
+    // Elevator
+    fill(255, 128, 0);
+    rect(robotX - ELEVATOR_WIDTH / 2, height - elevatorHeight - ROBOT_HEIGHT, ELEVATOR_WIDTH, elevatorHeight + 10, ELEVATOR_WIDTH / 2);
+
+    // Arm
+    strokeWeight(ARM_WIDTH)
+    stroke(255, 128, 0)
+    beginShape();
+    vertex(robotX, height - elevatorHeight - ROBOT_HEIGHT + ARM_WIDTH);
+    vertex(robotX + ARM_LENGTH * Math.cos(armAngle), height - elevatorHeight - ROBOT_HEIGHT + ARM_WIDTH + ARM_LENGTH * Math.sin(armAngle));
+    endShape();
+    // rect(robotX, height - elevatorHeight - ROBOT_HEIGHT, ARM_LENGTH, ARM_WIDTH);
 
     // The robot
     noStroke();
     fill(140, 38, 255);
+    rect(robotX - ROBOT_WIDTH / 2, height - ROBOT_HEIGHT, ROBOT_WIDTH, ROBOT_HEIGHT, ROBOT_HEIGHT / 4, ROBOT_HEIGHT / 4)
+
+    // The Coral
+    fill(230);
     beginShape();
-    let r1 = (p1.copy().mult((1 - robotContactPoint))).add(p4.copy().mult(robotContactPoint));
-
-    let r2 = createVector(
-        r1.x - ROBOT_WIDTH * Math.cos(robotAngle - cageAngle - chainAngle),
-        r1.y - ROBOT_WIDTH * Math.sin(robotAngle - cageAngle - chainAngle));
-
-    let r3 = createVector(
-        r2.x - ROBOT_HEIGHT * Math.sin(robotAngle - cageAngle - chainAngle),
-        r2.y + ROBOT_HEIGHT * Math.cos(robotAngle - cageAngle - chainAngle));
-
-    let r4 = createVector(
-        r1.x - ROBOT_HEIGHT * Math.sin(robotAngle - cageAngle - chainAngle),
-        r1.y + ROBOT_HEIGHT * Math.cos(robotAngle - cageAngle - chainAngle));
-
-    vertex(r1.x, r1.y);
-    vertex(r2.x, r2.y);
-    vertex(r3.x, r3.y);
-    vertex(r4.x, r4.y);
-    vertex(r1.x, r1.y);
+    vertex(
+        robotX + ARM_LENGTH * Math.cos(armAngle) + CORAL_WIDTH / 2 * Math.sin(armAngle),
+        height - elevatorHeight - ROBOT_HEIGHT + ARM_WIDTH + ARM_LENGTH * Math.sin(armAngle) - CORAL_WIDTH / 2 * Math.cos(armAngle));
+    vertex(
+        robotX + ARM_LENGTH * Math.cos(armAngle) + CORAL_HEIGHT * Math.cos(armAngle) + CORAL_WIDTH / 2 * Math.sin(armAngle),
+        height - elevatorHeight - ROBOT_HEIGHT + ARM_WIDTH + ARM_LENGTH * Math.sin(armAngle) - CORAL_WIDTH / 2 * Math.cos(armAngle) + CORAL_HEIGHT * Math.sin(armAngle));
+    vertex(
+        robotX + ARM_LENGTH * Math.cos(armAngle) + CORAL_HEIGHT * Math.cos(armAngle) - CORAL_WIDTH / 2 * Math.sin(armAngle),
+        height - elevatorHeight - ROBOT_HEIGHT + ARM_WIDTH + ARM_LENGTH * Math.sin(armAngle) + CORAL_WIDTH / 2 * Math.cos(armAngle) + CORAL_HEIGHT * Math.sin(armAngle));
+    vertex(
+        robotX + ARM_LENGTH * Math.cos(armAngle) - CORAL_WIDTH / 2 * Math.sin(armAngle),
+        height - elevatorHeight - ROBOT_HEIGHT + ARM_WIDTH + ARM_LENGTH * Math.sin(armAngle) + CORAL_WIDTH / 2 * Math.cos(armAngle));
     endShape();
-
-    // Center of Mass
-    let robotCenterOfMass = (r1.add(r2)).mult(0.5);
-    let cageStructureCenterOfMass = (p1.add(p2).add(p3).add(p4)).mult(0.25);
-
-    let totalCenterMass = (robotCenterOfMass.mult(0.826)).add(cageStructureCenterOfMass.mult(1 - 0.826))
-    stroke(0, 100, 0);
-    strokeWeight(15);
-    point(totalCenterMass);
-
-
-    totalCenterMassY = ((((CHAIN_LENGTH * Math.cos(chainAngle) +
-        CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle)) * (1 - robotContactPoint) +
-        ((CHAIN_LENGTH * Math.cos(chainAngle) + CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle)) +
-            CAGE_HEIGHT * Math.cos(cageAngle + chainAngle)) * robotContactPoint) + (((CHAIN_LENGTH * Math.cos(chainAngle) +
-                CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle)) * (1 - robotContactPoint) +
-                ((CHAIN_LENGTH * Math.cos(chainAngle) + CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle)) +
-                    CAGE_HEIGHT * Math.cos(cageAngle + chainAngle)) * robotContactPoint)
-                - ROBOT_WIDTH * Math.sin(robotAngle - cageAngle - chainAngle))) * 0.5) * 0.826 + (0.25 * ((CHAIN_LENGTH * Math.cos(chainAngle) + CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle)) +
-                    CHAIN_LENGTH * Math.cos(chainAngle) - CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle) +
-                    (CHAIN_LENGTH * Math.cos(chainAngle) - CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle)) + CAGE_HEIGHT * Math.cos(cageAngle + chainAngle) +
-                    (CHAIN_LENGTH * Math.cos(chainAngle) + CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle)) + CAGE_HEIGHT * Math.cos(cageAngle + chainAngle))) * (1 - 0.826)
-
-    // const chainComponent = CHAIN_LENGTH * Math.cos(chainAngle);
-    // const cageComponent = CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle);
-    // const heightComponent = CAGE_HEIGHT * Math.cos(cageAngle + chainAngle);
-    // const robotAdjustment = ROBOT_WIDTH * Math.sin(robotAngle - cageAngle - chainAngle);
-
-    // const firstTerm =
-    //     ((chainComponent + cageComponent) * (1 - robotContactPoint) +
-    //         (chainComponent + cageComponent + heightComponent) * robotContactPoint);
-
-    // const combinedTerm = firstTerm + (firstTerm - robotAdjustment);
-
-    // const weightedAverage = (combinedTerm * 0.5) * 0.826;
-
-    // const additionalTerm =
-    //     0.174 * chainComponent +
-    //     0.087 * heightComponent
-
-    // const result = weightedAverage + additionalTerm;
-
-    // console.log(totalCenterMass.y, totalCenterMassY)
-
-    // Components
-    const chainComponent = CHAIN_LENGTH * Math.cos(chainAngle);
-    const cageComponent = CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle);
-    const heightComponent = CAGE_HEIGHT * Math.cos(cageAngle + chainAngle);
-    const robotAdjustment = ROBOT_WIDTH * Math.sin(robotAngle - cageAngle - chainAngle);
-
-    // Partial derivatives
-    const dChainComponent_dChainAngle = -CHAIN_LENGTH * Math.sin(chainAngle);
-    const dCageComponent_dChainAngle = (CAGE_WIDTH / 2) * Math.cos(cageAngle + chainAngle);
-    const dHeightComponent_dChainAngle = -CAGE_HEIGHT * Math.sin(cageAngle + chainAngle);
-    const dRobotAdjustment_dChainAngle = -ROBOT_WIDTH * Math.cos(robotAngle - cageAngle - chainAngle);
-
-    const dChainComponent_dCageAngle = 0;
-    const dCageComponent_dCageAngle = (CAGE_WIDTH / 2) * Math.cos(cageAngle + chainAngle);
-    const dHeightComponent_dCageAngle = -CAGE_HEIGHT * Math.sin(cageAngle + chainAngle);
-    const dRobotAdjustment_dCageAngle = -ROBOT_WIDTH * Math.cos(robotAngle - cageAngle - chainAngle);
-
-    // Derivative of firstTerm w.r.t. chainAngle
-    const dFirstTerm_dChainAngle =
-        dChainComponent_dChainAngle * (1 - robotContactPoint) +
-        dCageComponent_dChainAngle * (1 - robotContactPoint) +
-        (dChainComponent_dChainAngle + dCageComponent_dChainAngle + dHeightComponent_dChainAngle) * robotContactPoint;
-
-    // Derivative of firstTerm w.r.t. cageAngle
-    const dFirstTerm_dCageAngle =
-        dChainComponent_dCageAngle * (1 - robotContactPoint) +
-        dCageComponent_dCageAngle * (1 - robotContactPoint) +
-        (dChainComponent_dCageAngle + dCageComponent_dCageAngle + dHeightComponent_dCageAngle) * robotContactPoint;
-
-    // Derivative of combinedTerm
-    const dCombinedTerm_dChainAngle = dFirstTerm_dChainAngle + (dFirstTerm_dChainAngle - dRobotAdjustment_dChainAngle);
-    const dCombinedTerm_dCageAngle = dFirstTerm_dCageAngle + (dFirstTerm_dCageAngle - dRobotAdjustment_dCageAngle);
-
-    // Derivative of result
-    const dResult_dChainAngle =
-        (dCombinedTerm_dChainAngle * 0.5) * 0.826 +
-        0.174 * dChainComponent_dChainAngle + 0.087 * dHeightComponent_dChainAngle;
-
-    const dResult_dCageAngle =
-        (dCombinedTerm_dCageAngle * 0.5) * 0.826 +
-        0.174 * dChainComponent_dCageAngle + 0.087 * dHeightComponent_dCageAngle;
-    if (gravity) {
-        cageSlider.value(cageSlider.value() + dResult_dCageAngle * 0.1);
-        chainSlider.value(chainSlider.value() + dResult_dChainAngle * 0.1);
-    }
-    // Output derivatives
-    // console.log("Derivative w.r.t. chainAngle:", dResult_dChainAngle);
-    // console.log("Derivative w.r.t. cageAngle:", dResult_dCageAngle);
-
-    // robotCenterOfMass.y = (((CHAIN_LENGTH * Math.cos(chainAngle) +
-    //     CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle)) * (1 - robotContactPoint) +
-    //     ((CHAIN_LENGTH * Math.cos(chainAngle) + CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle)) +
-    //         CAGE_HEIGHT * Math.cos(cageAngle + chainAngle)) * robotContactPoint) + (((CHAIN_LENGTH * Math.cos(chainAngle) +
-    //             CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle)) * (1 - robotContactPoint) +
-    //             ((CHAIN_LENGTH * Math.cos(chainAngle) + CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle)) +
-    //                 CAGE_HEIGHT * Math.cos(cageAngle + chainAngle)) * robotContactPoint)
-    //             - ROBOT_WIDTH * Math.sin(robotAngle - cageAngle - chainAngle))) * 0.5
-
-    // cageStructureCenterOfMass.y = 0.25 * ((CHAIN_LENGTH * Math.cos(chainAngle) + CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle)) +
-    //     CHAIN_LENGTH * Math.cos(chainAngle) - CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle) +
-    //     (CHAIN_LENGTH * Math.cos(chainAngle) - CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle)) + CAGE_HEIGHT * Math.cos(cageAngle + chainAngle) +
-    //     (CHAIN_LENGTH * Math.cos(chainAngle) + CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle)) + CAGE_HEIGHT * Math.cos(cageAngle + chainAngle))
-
-    // r1.y = (CHAIN_LENGTH * Math.cos(chainAngle) +
-    //     CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle)) * (1 - robotContactPoint) +
-    //     ((CHAIN_LENGTH * Math.cos(chainAngle) + CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle)) +
-    //         CAGE_HEIGHT * Math.cos(cageAngle + chainAngle)) * robotContactPoint;
-    // r2.y = ((CHAIN_LENGTH * Math.cos(chainAngle) +
-    //     CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle)) * (1 - robotContactPoint) +
-    //     ((CHAIN_LENGTH * Math.cos(chainAngle) + CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle)) +
-    //         CAGE_HEIGHT * Math.cos(cageAngle + chainAngle)) * robotContactPoint)
-    //     - ROBOT_WIDTH * Math.sin(robotAngle - cageAngle - chainAngle);
-
-
-    // p1.y = CHAIN_LENGTH * Math.cos(chainAngle) + CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle);
-
-    // p2.y = CHAIN_LENGTH * Math.cos(chainAngle) - CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle);
-
-    // p3.y = (CHAIN_LENGTH * Math.cos(chainAngle) - CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle)) + CAGE_HEIGHT * Math.cos(cageAngle + chainAngle);
-
-    // p4.y = (CHAIN_LENGTH * Math.cos(chainAngle) + CAGE_WIDTH / 2 * Math.sin(cageAngle + chainAngle)) + CAGE_HEIGHT * Math.cos(cageAngle + chainAngle);
-
-    // chainPoint.y = CHAIN_LENGTH * Math.cos(chainAngle);
 
 
 }
