@@ -31,6 +31,8 @@ var armAngle;
 
 
 var robotXSlider, elevatorSlider, armSlider;
+var elevatorTextBox, armAngleTextBox;
+var checkbox
 function setup() {
     createCanvas(500, 500);
     robotX = width / 2;
@@ -38,24 +40,46 @@ function setup() {
     createP('Elevator Height:').position(10, 40);
     createP('Arm Angle:').position(10, 80);
 
-    robotXSlider = createSlider(ROBOT_WIDTH / 2, width - REEF_WIDTH - ROBOT_WIDTH / 2, width / 2);
+    checkbox = createCheckbox(' move to mouse');
+    checkbox.position(10, 150)
+    checkbox.checked(true)
+    robotXSlider = createSlider(ROBOT_WIDTH / 2, width - REEF_WIDTH - ROBOT_WIDTH / 2, width - REEF_WIDTH - ROBOT_WIDTH / 2);
     robotXSlider.position(10, 30);
     robotXSlider.size(80);
 
-    elevatorSlider = createSlider(0, ELEVATOR_HEIGHT, 30);
+    elevatorSlider = createSlider(0, ELEVATOR_HEIGHT / SCALE, 6);
     elevatorSlider.position(10, 70);
     elevatorSlider.size(80);
 
     armSlider = createSlider(-180, 180, 0);
     armSlider.position(10, 110);
     armSlider.size(80);
+
+    elevatorTextBox = createInput(elevatorSlider.value());
+    elevatorTextBox.position(120, 55)
+
+    armAngleTextBox = createInput(armSlider.value())
+    armAngleTextBox.position(90, 95)
+
+    elevatorTextBox.input(updateElevator);
+    armAngleTextBox.input(updateArm);
+}
+
+function updateElevator() {
+    elevatorSlider.value(elevatorTextBox.value())
+}
+
+function updateArm() {
+    armSlider.value(armAngleTextBox.value())
 }
 
 function draw() {
     robotX = robotXSlider.value();
-    elevatorHeight = elevatorSlider.value();
+    elevatorHeight = elevatorSlider.value() * SCALE;
     armAngle = degreesToRadians(armSlider.value());
 
+    elevatorTextBox.value(elevatorSlider.value());
+    armAngleTextBox.value(armSlider.value());
     background(255);
 
     noStroke();
@@ -128,8 +152,48 @@ function draw() {
         robotX + ARM_LENGTH * Math.cos(armAngle) - CORAL_WIDTH / 2 * Math.sin(armAngle),
         height - elevatorHeight - ROBOT_HEIGHT + ARM_WIDTH + ARM_LENGTH * Math.sin(armAngle) + CORAL_WIDTH / 2 * Math.cos(armAngle));
     endShape();
+    if (checkbox.checked()) {
+        if (0 <= mouseX && mouseX <= width && 0 <= mouseY && mouseY <= height) {
+            let inverseKinematics = calculateKinematics((mouseX - robotX) / SCALE, (height - mouseY - ROBOT_HEIGHT) / SCALE);
+            if (inverseKinematics.theta) {
+                armSlider.value(-inverseKinematics.theta);
+                elevatorSlider.value(inverseKinematics.H);
+                console.log(inverseKinematics)
+            } else {
+                console.log("HELP ME")
+            }
+        }
+    }
 
 
+}
+
+function calculateKinematics(x, y) {
+    const L = 18; // Length of the extending arm in inches
+
+    // Clamp x to the valid range [-L, L]
+    let clampedX = Math.max(-L, Math.min(L, x));
+
+    // Calculate cos(theta) and theta in radians
+    const cosTheta = clampedX / L;
+    const thetaRadians = Math.acos(cosTheta);
+    const sinTheta = Math.sqrt(1 - cosTheta ** 2);
+
+    // Calculate the reachable vertical position
+    const reachableY = L * sinTheta;
+
+    // Calculate H to move as close as possible to y
+    const H = y - reachableY;
+
+    // Convert theta to degrees
+    const thetaDegrees = (thetaRadians * 180) / Math.PI;
+
+    return {
+        theta: thetaDegrees.toFixed(2), // Theta in degrees
+        H: H.toFixed(2), // Height of the main arm
+        clampedX: clampedX.toFixed(2), // The adjusted x if clamping occurred
+        isClamped: x !== clampedX // Indicates if x was adjusted
+    };
 }
 
 function degreesToRadians(degrees) {
